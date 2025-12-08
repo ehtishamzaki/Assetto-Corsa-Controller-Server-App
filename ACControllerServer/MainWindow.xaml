@@ -1,0 +1,44 @@
+﻿<Window x:Class="ACControllerServer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ACControllerServer"
+        xmlns:pages="clr-namespace:ACControllerServer.Views"
+        mc:Ignorable="d" WindowStartupLocation="CenterScreen"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="Assetto Corsa Controller" Width="810" Height="425">
+    <Window.Resources>
+        <ResourceDictionary>
+            <pages:AssettoCorsa x:Key="TestAssettoCorsa" />
+
+            <Style TargetType="Viewbox">
+                <Setter Property="Stretch" Value="Uniform" />
+            </Style>
+            <Style TargetType="Image">
+                <Setter Property="Stretch" Value="UniformToFill" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ContentControl Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" 
+                        d:Content="{d:DesignInstance pages:ACClientsView, IsDesignTimeCreatable=True}"
+                        Content="{Binding ACClientsPage}" />
+        <ContentControl Grid.Column="1" Grid.Row="0" 
+                        d:Content="{d:DesignInstance pages:AssettoCorsa, IsDesignTimeCreatable=True}"
+                        Content="{Binding AssettoCorsaPage}" />
+        <ContentControl Grid.Column="1" Grid.Row="1" Margin="0,0,0,10" 
+                        d:Content="{d:DesignInstance pages:ServerManagerView, IsDesignTimeCreatable=True}"
+                        Content="{Binding ServerManagerPage}" />
+    </Grid>
+</Window>

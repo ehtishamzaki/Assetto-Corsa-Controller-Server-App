@@ -1,0 +1,55 @@
+﻿<Window x:Class="ACControllerServer.Views.ScanQRPassWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ACControllerServer.Views"
+        mc:Ignorable="d" Title="Scan QR Code" AllowsTransparency="True"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded" Topmost="True"
+        Height="250" Width="450" BorderThickness="2" BorderBrush="Gray">
+    <Window.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Border">
+                <Setter Property="CornerRadius" Value="5" />
+            </Style>
+            
+            <Style TargetType="Label">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="VerticalContentAlignment" Value="Bottom" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    
+    <Grid>
+        <TextBox x:Name="txtQRCode" Focusable="True" />
+        <Button IsDefault="True" Click="Button_Click" />
+        <Button IsCancel="True" Click="CancelButton_Click" />
+        <Label Background="LightGray" Panel.ZIndex="10" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <WrapPanel>
+                    <Label Content="Please Scan the " />
+                    <Label Content="QR Code" Foreground="DarkGreen" FontSize="18" FontWeight="Bold" />
+                    <Label Content=" of Visitor" />
+                </WrapPanel>
+                <Label Grid.Row="1" Content="Or" FontSize="10" Margin="0, 10" />
+                <WrapPanel Grid.Row="2">
+                    <Label Content="Press the " />
+                    <Label Content="Esc" Foreground="Red" FontSize="18" FontWeight="Bold" />
+                    <Label Content=" button to cancel the scan!" />
+                </WrapPanel>
+            </Grid>
+        </Label>
+    </Grid>
+</Window>

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACControllerServer", "ACControllerServer\ACControllerServer.csproj", "{A44602BA-EEC8-4D9F-80F9-4AF6F82971FC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACController", "ACController\ACController.csproj", "{ACB0CA24-51CF-4AA8-BA11-AF708D8BD86E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A44602BA-EEC8-4D9F-80F9-4AF6F82971FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A44602BA-EEC8-4D9F-80F9-4AF6F82971FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A44602BA-EEC8-4D9F-80F9-4AF6F82971FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A44602BA-EEC8-4D9F-80F9-4AF6F82971FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACB0CA24-51CF-4AA8-BA11-AF708D8BD86E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACB0CA24-51CF-4AA8-BA11-AF708D8BD86E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACB0CA24-51CF-4AA8-BA11-AF708D8BD86E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACB0CA24-51CF-4AA8-BA11-AF708D8BD86E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {18731D77-19F0-4CE8-BBAE-29503DEEC508}
+	EndGlobalSection
+EndGlobal

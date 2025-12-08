@@ -1,0 +1,176 @@
+﻿<UserControl x:Class="ACControllerServer.Views.ServerManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:c="clr-namespace:ACControllerServer.Converters"
+             xmlns:local="clr-namespace:ACControllerServer.Views"
+             mc:Ignorable="d" d:Background="White"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             d:DesignHeight="106" d:DesignWidth="540">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <c:BoolToLedColor x:Key="BooltoLed" />
+
+            <Style x:Key="StatusLamp" TargetType="local:LedControl">
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Width" Value="20" />
+                <Setter Property="LedBorderThickness" Value="2" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="AnimationSpeed" Value="0.4" />
+                <Setter Property="IsAnimated" Value="True" />
+            </Style>
+            <Style x:Key="TitleLabel" TargetType="Label">
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Margin" Value="5, 2" />
+            </Style>
+
+            <Style x:Key="RaceTypeButton" TargetType="RadioButton">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+            </Style>
+
+            <Style x:Key="ConfigLabel" TargetType="Label">
+                <Setter Property="Margin" Value="0 5" />
+                <Setter Property="Padding" Value="0, 8" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontStretch" Value="Condensed" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+            </Style>
+            <Style x:Key="ConfigTextBox" TargetType="TextBox">
+                <Setter Property="MinWidth" Value="50" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontStretch" Value="Condensed" />
+                <Setter Property="Padding" Value="10, 2" />
+                <Setter Property="Margin" Value="5 5" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="RaceLapTextBox" TargetType="TextBox" BasedOn="{StaticResource ConfigTextBox}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsHosted}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="ActionButton" TargetType="Button">
+                <Setter Property="Border.CornerRadius" Value="5" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="BorderBrush" Value="Black" />
+                <Setter Property="MinWidth" Value="100" />
+                <Setter Property="Padding" Value="10, 5" />
+                <Setter Property="Margin" Value="10, 2, 0, 2" />
+                <Setter Property="Width" Value="100" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Style.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5" />
+                    </Style>
+                </Style.Resources>
+            </Style>
+            <Style x:Key="HostButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                <d:Setter Property="Content" Value="Host Race" />
+                <d:Setter Property="Background" Value="#99DC8419" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsHosted}" Value="False">
+                        <Setter Property="Content" Value="Host Race" />
+                        <Setter Property="Background" Value="#99DC8419" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsHosted}" Value="True">
+                        <Setter Property="Content" Value="Stop Host" />
+                        <Setter Property="Background" Value="#99FF0000" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="RaceButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                <Setter Property="Background" Value="#992FDC16" />
+                <Setter Property="IsEnabled" Value="{Binding IsHosted}" />
+                <Setter Property="Content" Value="Start Race" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsRaceStarted}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Style="{StaticResource TitleLabel}" Content="Server Manager: " />
+            <local:LedControl Style="{StaticResource StatusLamp}" d:Fill="Red"
+                              Fill="{Binding IsConnected, Converter={StaticResource BooltoLed}}" />
+        </StackPanel>
+        <Grid Margin="10, 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" SharedSizeGroup="A" />
+                <RowDefinition Height="*" SharedSizeGroup="A" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" SharedSizeGroup="A" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="A" />
+            </Grid.ColumnDefinitions>
+
+            <!--race types-->
+            <RadioButton Grid.Row="1" Grid.Column="0" Content="Time" 
+                         Style="{StaticResource RaceTypeButton}" 
+                         Command="{Binding RaceTimeChangeCommand}"
+                         IsChecked="{Binding IsTimedRace}" d:IsChecked="True" />
+            <RadioButton Grid.Row="0" Grid.Column="0" Content="Laps" 
+                         Style="{StaticResource RaceTypeButton}" 
+                         Command="{Binding RaceTimeChangeCommand}"
+                         IsChecked="{Binding IsLapRace}" />
+
+            <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" 
+                        Orientation="Horizontal"
+                        Visibility="{Binding IsTimedRace, Converter={StaticResource BoolToVisibility}}">
+
+                <Label Grid.Column="0" Content="Race Time: "
+                       Style="{StaticResource ConfigLabel}" />
+                <StackPanel Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0, 7">
+                    <TextBox Style="{StaticResource ConfigTextBox}" d:Text="5" Text="{Binding RaceTime}" />
+                    <Label Content="(Session length in minutes)" Margin="0" Padding="10, 0" 
+                           FontSize="11" VerticalContentAlignment="Top" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" 
+                        Orientation="Horizontal"
+                        Visibility="{Binding IsLapRace, Converter={StaticResource BoolToVisibility}}" d:Visibility="Collapsed">
+
+                <Label Grid.Column="0" Content="Race Laps: " 
+                       Style="{StaticResource ConfigLabel}" />
+                <StackPanel Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0, 7">
+                    <TextBox Style="{StaticResource RaceLapTextBox}" d:Text="5" Text="{Binding NumOfLaps}" />
+                    <Label Content="(Number of laps in the race)" Margin="0" Padding="10, 0" 
+                           FontSize="11" VerticalContentAlignment="Top" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Margin="2">
+                <Button x:Name="btnHostRace" Style="{StaticResource HostButton}" Click="btnHostRace_Click" />
+                <Button x:Name="btnStartRace" Style="{StaticResource RaceButton}" Click="btnStartRace_Click" />
+            </StackPanel>
+            
+        </Grid>
+    </StackPanel>
+</UserControl>

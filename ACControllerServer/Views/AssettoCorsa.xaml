@@ -1,0 +1,157 @@
+﻿<UserControl x:Class="ACControllerServer.Views.AssettoCorsa"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:models="clr-namespace:ACControllerServer.Models"
+      xmlns:local="clr-namespace:ACControllerServer.Views"
+      mc:Ignorable="d" d:Background="White"
+      DataContext="{Binding RelativeSource={RelativeSource Self}}"
+      d:Height="310" d:Width="550">
+    <UserControl.Resources>
+        <ResourceDictionary>
+
+            <x:Array x:Key="FakeCars" Type="{x:Type models:CarData}">
+                <models:CarData CarId="TestCar1" CarName="Test Car 1" />
+                <models:CarData CarId="TestCar2" CarName="Test Car 2" />
+                <models:CarData CarId="TestCar3" CarName="Test Car 3" />
+            </x:Array>
+
+            <Style TargetType="Viewbox">
+                <Setter Property="Stretch" Value="Uniform" />
+            </Style>
+            <Style TargetType="Image">
+                <Setter Property="Stretch" Value="UniformToFill" />
+            </Style>
+
+            <Style x:Key="DataGrid" TargetType="Grid">
+                <Setter Property="Visibility" Value="Visible" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsEnabled}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Opacity" Value="0.2" />
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="ComboLabel" TargetType="Label">
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+            <Style x:Key="ServerCombobox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+            </Style>
+            <Style x:Key="ImageBorder" TargetType="Border">
+                <Setter Property="Grid.Row" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0, 5, 0, 0" />
+            </Style>
+            <Style x:Key="AcRunningLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="Grid.Row" Value="1" />
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="FontStretch" Value="Condensed" />
+                <Setter Property="Foreground" Value="#FFC52424" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsEnabled}" Value="false" />
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+            
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        
+        <Grid Style="{StaticResource DataGrid}"
+              Margin="0 ,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width=".5*" />
+                <ColumnDefinition Width=".5*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Margin="10, 5" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Stretch">
+                    <Label Content="Select Car:" Style="{StaticResource ComboLabel}" />
+                    <ComboBox x:Name="comboCars" Style="{StaticResource ServerCombobox}"
+                              ItemsSource="{Binding Cars, Mode=OneWay}"
+                              d:ItemsSource="{StaticResource FakeCars}"
+                              SelectedItem="{Binding SelectedCarData}"
+                              DisplayMemberPath="CarName"
+                              SelectedValuePath="CarId"
+                              SelectionChanged="comboCars_SelectionChanged" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch" Visibility="Hidden">
+                    <Label Content="Select Skin:" Style="{StaticResource ComboLabel}" />
+                    <ComboBox x:Name="comboSkins" Style="{StaticResource ServerCombobox}"
+                              ItemsSource="{Binding SelectedCarData.Skins, Mode=OneWay}"
+                              SelectedItem="{Binding SelectedSkin}"
+                              DisplayMemberPath="SkinName"
+                              SelectedValuePath="SkinId"
+                              SelectionChanged="comboSkins_SelectionChanged" />
+                </StackPanel>
+
+                <Border Style="{StaticResource ImageBorder}">
+                    <Viewbox>
+                        <Image Source="{Binding CarImage}" />
+                    </Viewbox>
+                </Border>
+
+            </Grid>
+
+            <Grid Margin="10, 5" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Stretch">
+                    <Label Content="Select Track:" Style="{StaticResource ComboLabel}" />
+                    <ComboBox x:Name="comboTracks" Style="{StaticResource ServerCombobox}"
+                              ItemsSource="{Binding Tracks, Mode=OneWay}"
+                              SelectedItem="{Binding SelectedTrackData}"
+                              DisplayMemberPath = "TrackName"
+                              SelectedValuePath = "TrackId"
+                              SelectionChanged="comboTracks_SelectionChanged" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch">
+                    <Label Content="Select Layout:" Style="{StaticResource ComboLabel}" />
+                    <ComboBox x:Name="comboLayouts" Style="{StaticResource ServerCombobox}" 
+                              ItemsSource="{Binding SelectedTrackData.Layouts, Mode=OneWay}"
+                              SelectedItem="{Binding SelectedLayout}"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Id"
+                              SelectionChanged="comboLayouts_SelectionChanged" />
+                </StackPanel>
+
+                <Border Background="{Binding TrackBackground}" Style="{StaticResource ImageBorder}">
+                    <Viewbox>
+                        <Image Source="{Binding TrackOutlineImage}" />
+                    </Viewbox>
+                </Border>
+
+            </Grid>
+
+        </Grid>
+        <Label Style="{StaticResource AcRunningLabel}"
+               Content="Server Manager is currently hosting a race&#x0a;You can't make changes while a Race is hosted..." />
+
+    </Grid>
+</UserControl>
