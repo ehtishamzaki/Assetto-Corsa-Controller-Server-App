@@ -24,9 +24,6 @@ using System.Windows.Shapes;
 
 namespace ACController
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly Point _DriveButtonLocation = new(50d, 150d);
@@ -36,21 +33,31 @@ namespace ACController
         private readonly AppSettings _Configurtion;
         private readonly AcSimulatorService _SimulatorService;
         private readonly AcConfigService _AcConfigService;
+        private readonly OscService _OscService;
+
+        private enum SimulatorState { None, Available, Attended, Racing }
+        private SimulatorState _currentState = SimulatorState.None;
 
         public MainWindow()
         {
-            // load or create the configuration file
             AppSettings.LoadConfig(ref _Configurtion);
-            // check if environment variable set
             if (Environment.GetEnvironmentVariable("SteamAppId") == null)
                 Environment.SetEnvironmentVariable("SteamAppId", "244210", EnvironmentVariableTarget.Process);
-            SteamAPI.Init();
-            _SteamId = SteamUser.GetSteamID().ToString();
-            SteamAPI.Shutdown();
-            // initialize services
+
+            if (SteamAPI.Init())
+            {
+                _SteamId = SteamUser.GetSteamID().ToString();
+                SteamAPI.Shutdown();
+            }
+            else
+            {
+                _SteamId = Environment.MachineName;
+            }
+
             _ServerBaseAddress = _Configurtion.ServerAddress.Trim('/').Trim();
             _SimulatorService = new AcSimulatorService(_Configurtion.ACRootDirectory);
             _AcConfigService = new AcConfigService();
+            _OscService = new OscService();
 
             InitializeComponent();
 #if DEBUG
@@ -61,7 +68,6 @@ namespace ACController
             NotifyProperty(nameof(IsAssigned));
             VisitorName = "Husnain Ali";
             NotifyProperty(nameof(VisitorName));
-
             RacePosition = AddOrdinal(2);
             NotifyProperty(nameof(RacePosition));
             TrackName = "Imola";
@@ -72,7 +78,6 @@ namespace ACController
             NotifyProperty(nameof(BestLapTime));
             IsResultAvailable = false;
             NotifyProperty(nameof(IsResultAvailable));
-            //this.WindowState = WindowState.Normal;
 #endif
 
             _Hub = new HubConnectionBuilder()
@@ -83,6 +88,7 @@ namespace ACController
             _ = StartHub();
 
             _Hub.On("Start", OnStart);
+            _Hub.On("Stop", OnStop);
             _Hub.On("SkipGameLobby", OnSkipGameLobby);
             _Hub.On("SimulatorStatus", OnSimulatorStatus);
             _Hub.On<string>("SetDriver", OnSetDriver);
@@ -100,7 +106,7 @@ namespace ACController
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
-        
+
         private void NotifyProperty(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
@@ -116,11 +122,11 @@ namespace ACController
                 {
                     IsConnected = true;
                     NotifyProperty(nameof(IsConnected));
+                    Dispatcher.Invoke(UpdateState);
                     return;
                 }
                 if (task.IsFaulted || task.IsCanceled)
                 {
-
                     if (task.IsFaulted)
                     {
                         await Dispatcher.InvokeAsync(() =>
@@ -136,9 +142,9 @@ namespace ACController
                 }
             });
         }
+
         private Task Hub_Closed(Exception arg)
         {
-            // reset the driver state and remove any assignment
             Dispatcher.Invoke(() => this.OnSetDriver(string.Empty));
             return Task.CompletedTask;
         }
@@ -146,18 +152,26 @@ namespace ACController
         private void OnStart()
         {
             if (IsAssigned)
+            {
                 _SimulatorService.StartSimulator();
+                UpdateState();
+            }
         }
-        
-        private void OnRaceResult(int position, 
-            string trackName, 
-            string carName, 
+
+        private void OnStop()
+        {
+            _SimulatorService.StopSimulator();
+            UpdateState();
+        }
+
+        private void OnRaceResult(int position,
+            string trackName,
+            string carName,
             long bestLapMilliseconds)
         {
             if (!IsAssigned)
                 return;
 
-            // update properties
             Dispatcher.Invoke(() =>
             {
                 RacePosition = AddOrdinal(position);
@@ -173,8 +187,10 @@ namespace ACController
                 NotifyProperty(nameof(IsResultAvailable));
                 this.Show();
             });
-            // stop simulator
+
             _SimulatorService.StopSimulator();
+            UpdateState();
+
             Dispatcher.Invoke(async () =>
             {
                 await Task.Delay(1000 * 10);
@@ -182,16 +198,19 @@ namespace ACController
                 await StartHub();
             });
         }
+
         private async void OnSimulatorStatus()
         {
             try
             {
                 await _SimulatorService.FindProcess();
                 await _Hub.InvokeAsync("UpdateStatus", _SimulatorService.IsRunning);
+                Dispatcher.Invoke(UpdateState);
             }
             catch
             {
             }
+
             if (_SimulatorService.IsRunning)
                 Dispatcher.Invoke(() => this.Hide());
             else if (!_SimulatorService.IsRunning && this.Visibility == Visibility.Hidden)
@@ -217,7 +236,7 @@ namespace ACController
                             .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork)
                             .ToString();
                 }
-                    
+
             _AcConfigService.SetRemoteServer(remoteConfig);
         }
 
@@ -229,7 +248,6 @@ namespace ACController
 
         private void OnSetDriver(string driverName)
         {
-            // check if empty driver name
             if (string.IsNullOrWhiteSpace(driverName))
             {
                 driverName = string.Empty;
@@ -239,6 +257,7 @@ namespace ACController
                 NotifyProperty(nameof(IsAssigned));
                 IsResultAvailable = false;
                 NotifyProperty(nameof(IsResultAvailable));
+                UpdateState();
                 return;
             }
 
@@ -247,11 +266,14 @@ namespace ACController
             NotifyProperty(nameof(VisitorName));
             IsAssigned = true;
             NotifyProperty(nameof(IsAssigned));
+            UpdateState();
         }
+
         private void OnSetCurrentCar(string carId, string skinId)
         {
             _AcConfigService.SetCarDetails(carId, skinId);
         }
+
         private void OnSetCurrentTrack(string carId, string skinId)
         {
             _AcConfigService.SetTrackDetails(carId, skinId);
@@ -264,16 +286,42 @@ namespace ACController
         public bool IsConnected { get; set; } = false;
         public bool IsAssigned { get; set; } = false;
         public string VisitorName { get; set; } = string.Empty;
-
         public bool IsResultAvailable { get; set; } = false;
         public string RacePosition { get; set; }
         public string TrackName { get; set; }
         public string CarName { get; set; }
-        public string BestLapTime { get; set; } 
+        public string BestLapTime { get; set; }
 
         #endregion
 
-        #region Method
+        #region Methods
+
+        private void UpdateState()
+        {
+            SimulatorState newState;
+
+            if (!IsConnected)
+                newState = SimulatorState.None;
+            else if (_SimulatorService.IsRunning)
+                newState = SimulatorState.Racing;
+            else if (IsAssigned)
+                newState = SimulatorState.Attended;
+            else
+                newState = SimulatorState.Available;
+
+            if (newState != _currentState && newState != SimulatorState.None)
+            {
+                _currentState = newState;
+                int scene = newState switch
+                {
+                    SimulatorState.Available => 2,
+                    SimulatorState.Attended => 3,
+                    SimulatorState.Racing => 4,
+                    _ => 2
+                };
+                _OscService.SendScene(scene);
+            }
+        }
 
         public static string AddOrdinal(int num)
         {
@@ -287,11 +335,12 @@ namespace ACController
                     return num + "th";
             }
 
-            return (num % 10) switch { 
-                1 => num + "st", 
-                2 => num + "nd", 
-                3 => num + "rd", 
-                _ => num + "th" 
+            return (num % 10) switch
+            {
+                1 => num + "st",
+                2 => num + "nd",
+                3 => num + "rd",
+                _ => num + "th"
             };
         }
 
@@ -299,12 +348,10 @@ namespace ACController
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // get the dpi aware button size
             var buttonSize = PresentationSource.FromVisual(btnCoordinates).CompositionTarget
                 .TransformToDevice.Transform(new Point(btnCoordinates.Width, btnCoordinates.Height));
-            // get the button coordinates as per DPI
             var buttonCoordinates = btnCoordinates.PointToScreen(new Point(0, 0));
-            var clickPoint = new Point((buttonSize.X / 2d) + buttonCoordinates.X, 
+            var clickPoint = new Point((buttonSize.X / 2d) + buttonCoordinates.X,
                 (buttonSize.Y / 2d) + buttonCoordinates.Y);
             MessageBox.Show(clickPoint.ToString());
         }

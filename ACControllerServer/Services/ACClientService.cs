@@ -45,6 +45,8 @@ namespace ACControllerServer.Services
 
         public async Task StartSimulator() =>
             await _Context.Clients.All.SendAsync("Start");
+        public async Task StopSimulator() =>
+            await _Context.Clients.All.SendAsync("Stop");
 
         public async Task SimulatorStatus() =>
             await _Context.Clients.All.SendAsync("SimulatorStatus");

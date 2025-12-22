@@ -8,12 +8,11 @@ namespace ACController.Services
 {
     public class AcSimulatorService
     {
-        
+
         public AcSimulatorService(string acRoot)
         {
             _AcRoot = Path.GetFullPath(acRoot ?? string.Empty);
 
-            // find the process name
             _ProcessName = FindProcessName();
             _ProcessNameWithoutExt = Path.GetFileNameWithoutExtension(_ProcessName);
         }
@@ -31,13 +30,10 @@ namespace ACController.Services
 
         private string FindProcessName()
         {
-            // check if AC pro
             if (File.Exists(Path.Combine(_AcRoot, "acs_pro.exe")))
                 return "acs_pro.exe";
-            // check if AC
             if (Environment.Is64BitOperatingSystem && File.Exists(Path.Combine(_AcRoot, "acs.exe")))
                 return "acs.exe";
-            // check if ac 32bit
             if (!Environment.Is64BitOperatingSystem && File.Exists(Path.Combine(_AcRoot, "acs_x86")))
                 return "acs_x86";
 
@@ -62,23 +58,22 @@ namespace ACController.Services
             _SimulatorProcess = Process.Start(startInfo);
         }
 
-        public void StopSimulator() => 
-            _SimulatorProcess.Kill();
+        public void StopSimulator()
+        {
+            if (_SimulatorProcess != null && !_SimulatorProcess.HasExited)
+                _SimulatorProcess.Kill();
+        }
 
         public async Task FindProcess()
         {
-            // check if process running then exit
             if (IsRunning || string.IsNullOrWhiteSpace(_ProcessName))
                 return;
-            // check if the process is stopped already
             if (_SimulatorProcess != null && _SimulatorProcess.HasExited)
                 _SimulatorProcess = null;
 
-            // get all processes
             Process[] allProcess = await Task.Run(Process.GetProcesses);
             _SimulatorProcess = allProcess.FirstOrDefault(x => x.ProcessName == _ProcessNameWithoutExt);
-            
-            // clear memory
+
             Array.Clear(allProcess);
         }
 
