@@ -20,6 +20,8 @@ namespace ACControllerServer.Models
         public string CarsDirectory { get; set; }
 
         public string TracksDirectory { get; set; }
+        public List<string> SimulatorsMacAddressList { get; set; } = new List<string>();
+
 
         #endregion
 

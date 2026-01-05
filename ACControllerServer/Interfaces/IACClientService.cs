@@ -23,7 +23,8 @@ namespace ACControllerServer.Interfaces
         public Task SetRemoteServer(ACRemoteConfig remoteConfig);
 
         public Task StartSimulator();
-        
+
+        public Task StopSimulator();
         public Task SimulatorStatus();
 
     }

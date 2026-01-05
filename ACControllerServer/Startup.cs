@@ -44,6 +44,7 @@ namespace ACControllerServer
             services.AddSingleton<ServerManagerView>();
 
             // configure services
+            services.AddSingleton<WakeOnLanService>();
             services.AddTransient<ClientHub>();
             services.AddSingleton<IMqttHandlerService, MqttHandlerService>();
             services.AddSingleton<IEventHouseAPI, EventHouseAPI>();
